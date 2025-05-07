@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="ai_chatbot_icon_3d.jpeg">
+    <!-- Regular favicon for tab display -->
+    <title>AI Chatbot</title>
+    <style>
+        :root {
+            --bg-color: #343541;
+            --chat-bg: #444654;
+            --text-color: #fff;
+            --input-bg: #40414f;
+            --border-color: #565869;
+            --accent-color: #19c37d;
+            --message-bg: #343541;
+            --code-bg: #1e1e1e;
+            --code-header: #323233;
+            --code-comment: #6a9955;
+            --code-string: #ce9178;
+            --code-keyword: #569cd6;
+            --code-function: #dcdcaa;
+            --code-number: #b5cea8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-container {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+        }
+
+        .header {
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            display: flex;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .message.user {
+            background-color: var(--message-bg);
+            font-weight: 800; /* Makes the text bold */
+            font-size: 1.1em; /* Slightly larger font size */
+            color: #00ff00; /* Bright green color for the user's message */
+        }
+
+        .message.bot {
+            background-color: var(--chat-bg);
+            color: var(--text-color);
+        }
+
+        .message-content {
+            max-width: 720px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .user-message-container {
+    padding: 10px;
+    border-radius: 8px;
+    margin: 5px 0;
+    color: #2196f3; /* Blue color, change as needed */
+    font-weight: bold;
+    font-size: 1.15em;
+}
+
+        .bot-message-container {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 5px 0;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow: hidden;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+
+        .code-header {
+            background: var(--code-header);
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-header .language {
+            color: #808080;
+            font-size: 0.875rem;
+        }
+
+        .code-header .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .code-header button {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .code-header button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .code-content {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            font-size: 0.9375rem;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        .keyword { color: var(--code-keyword); }
+        .function { color: var(--code-function); }
+        .comment { color: var(--code-comment); }
+        .string { color: var(--code-string); }
+        .number { color: var(--code-number); }
+        .code-keyword { color: var(--code-keyword); }
+        .code-function { color: var(--code-function); }
+
+        .input-container {
+            position: sticky;
+            bottom: 0;
+            padding: 1.5rem;
+            background-color: var(--bg-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-box {
+            width: 100%;
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.5rem;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+        }
+
+        textarea {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1rem;
+            resize: none;
+            height: 24px;
+            max-height: 200px;
+            outline: none;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+
+        .send-button {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+
+        .send-button:hover {
+            background-color: #15a067;
+        }
+
+        .send-button:disabled {
+            background-color: var(--border-color);
+            cursor: not-allowed;
+        }
+
+        .clear-button {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+
+        .clear-button:hover {
+            background-color: var(--chat-bg);
+        }
+        
+        .model-button {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-right: 10px;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+        
+        .model-button:hover {
+            background-color: #15a067;
+        }
+        
+        .model-dropdown {
+            display: none;
+            position: absolute;
+            background-color: var(--input-bg);
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        
+        .model-dropdown.show {
+            display: block;
+        }
+        
+        .model-option {
+            color: var(--text-color);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+        }
+        
+        .model-option:hover {
+            background-color: var(--chat-bg);
+            border-radius: 5px;
+        }
+        
+        /* Header icon styling */
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 10px rgba(25, 195, 125, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <div class="header-left">
+                <img src="ai_chatbot_icon_3d.jpeg" alt="Chatbot Icon" class="header-icon">
+                <h1>AI Chatbot GPT</h1>
+            </div>
+            <div>
+                <button id="modelButton" class="model-button">Select Model</button>
+                <div id="modelDropdown" class="model-dropdown">
+                    <div class="model-option" data-model="groq">GPT0.2</div>
+                    <div class="model-option" data-model="minigpt">MiniGPT (BFS/DFS)</div>
+                </div>
+                <button onclick="clearHistory()" class="clear-button">Clear History</button>
+            </div>
+        </div>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-container">
+            <div class="input-box">
+                <textarea id="userInput" placeholder="Message AI Assistant..." rows="1"></textarea>
+                <button class="send-button" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load chat history when page loads
+        window.onload = function() {
+            const savedMessages = localStorage.getItem('chatHistory');
+            if (savedMessages) {
+                const messages = JSON.parse(savedMessages);
+                messages.forEach(msg => {
+                    appendMessage(msg, false); // false means don't save to storage while loading
+                });
+            }
+        };
+
+        // Function to save message to local storage
+        function saveToHistory(message) {
+            const savedMessages = localStorage.getItem('chatHistory') || '[]';
+            const messages = JSON.parse(savedMessages);
+            messages.push(message);
+            localStorage.setItem('chatHistory', JSON.stringify(messages));
+        }
+
+        // Function to clear chat history
+        function clearHistory() {
+            localStorage.removeItem('chatHistory');
+            document.getElementById('chatBox').innerHTML = '';
+        }
+
+        // Current selected model
+        let currentModel = 'groq';
+        
+        // Function to toggle model dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const modelButton = document.getElementById('modelButton');
+            const modelDropdown = document.getElementById('modelDropdown');
+            
+            // Toggle dropdown when clicking the model button
+            modelButton.addEventListener('click', function() {
+                modelDropdown.classList.toggle('show');
+            });
+            
+            // Close dropdown when clicking outside
+            window.addEventListener('click', function(event) {
+                if (!event.target.matches('.model-button')) {
+                    if (modelDropdown.classList.contains('show')) {
+                        modelDropdown.classList.remove('show');
+                    }
+                }
+            });
+            
+            // Handle model selection
+            const modelOptions = document.querySelectorAll('.model-option');
+            modelOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    currentModel = this.getAttribute('data-model');
+                    modelButton.textContent = this.textContent;
+                    modelDropdown.classList.remove('show');
+                    console.log('Selected model:', currentModel);
+                });
+            });
+        });
+        
+        // Function to send a message to the FastAPI backend
+        async function sendMessage() {
+            const userMessage = document.getElementById('userInput').value;
+            if (!userMessage.trim()) return;
+
+            appendMessage('You: ' + userMessage, true);
+
+            const data = { 
+                message: userMessage,
+                mode: currentModel  // Add the selected model to the request
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:8080/chat/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Error response:', errorData);
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                // Change the bot name based on the selected model
+                const botName = currentModel === 'minigpt' ? 'MiniGPT' : 'Gpt0.2';
+                appendMessage(`${botName}: ${result.response}`, true);
+            } catch (error) {
+                console.error('Error:', error);
+                const botName = currentModel === 'minigpt' ? 'MiniGPT' : 'Gpt0.2';
+                appendMessage(`${botName}: Error - ${error.message}`, true);
+            }
+
+            document.getElementById('userInput').value = '';
+        }
+
+        // Function to append message to the chat box
+        function appendMessage(message, saveToStorage = true) {
+            const chatBox = document.getElementById('chatBox');
+            const messageDiv = document.createElement('div');
+            const isUser = message.startsWith('You:');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            const messageContent = document.createElement('div');
+            messageContent.className = `message-content ${isUser ? 'user-message-container' : 'bot-message-container'}`;
+
+            // Save to local storage if needed
+            if (saveToStorage) {
+                saveToHistory(message);
+            }
+
+            // Check if the message contains code (simple check for demonstration)
+            if (message.includes('```')) {
+                const parts = message.split('```');
+                for (let i = 0; i < parts.length; i++) {
+                    if (i % 2 === 0) {
+                        // Regular text
+                        if (parts[i].trim()) {
+                            const textNode = document.createElement('div');
+                            textNode.textContent = parts[i].trim();
+                            messageContent.appendChild(textNode);
+                        }
+                    } else {
+                        // Code block
+                        const codeBlock = document.createElement('pre');
+                        codeBlock.className = 'code-block';
+                        
+                        // Create code header
+                        const header = document.createElement('div');
+                        header.className = 'code-header';
+                        
+                        const language = document.createElement('span');
+                        language.className = 'language';
+                        language.textContent = 'C';
+                        
+                        const actions = document.createElement('div');
+                        actions.className = 'actions';
+                        
+                        const copyBtn = document.createElement('button');
+                        copyBtn.textContent = 'Copy';
+
+                        // Add event listener to copy the entire code block
+                        copyBtn.addEventListener('click', () => {
+                            const codeText = codeContent.textContent; // Get the full code as plain text
+                            navigator.clipboard.writeText(codeText).then(() => {
+                                alert('Code copied to clipboard!');
+                            }).catch(err => {
+                                console.error('Failed to copy code:', err);
+                            });
+                        });
+
+                        actions.appendChild(copyBtn); // Only append the Copy button
+
+                        header.appendChild(language);
+                        header.appendChild(actions);
+                        codeBlock.appendChild(header);
+                        
+                        // Create code content
+                        const codeContent = document.createElement('div');
+                        codeContent.className = 'code-content';
+                        
+                        // Apply syntax highlighting (basic example)
+                        const code = parts[i].trim().split('\n').map(line => {
+                            // First escape any HTML special characters
+                            let highlightedLine = line
+                                .replace(/&/g, '&amp;')
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;');
+                            
+                            // Then apply syntax highlighting
+                            highlightedLine = highlightedLine
+                                // Handle #include statements first
+                                .replace(/(#include\s*<[^>]+>)/g, '<span class="keyword">$1</span>')
+                                // Handle data types
+                                .replace(/\b(void|int|float|double|char|long|short|unsigned|signed)\b/g, '$1') // Remove keyword highlighting
+                                // Handle other keywords
+                                .replace(/\b(return|for|if|else|while|do|switch|case|break|continue)\b/g, '$1') // Remove keyword highlighting
+                                // Handle function names
+                                .replace(/\b(printf|scanf|main|strlen|strcmp|strcpy|malloc|free)\b/g, '$1') // Remove function highlighting
+                                // Handle comments
+                                .replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)/g, '<span class="comment">$1</span>')
+                                // Handle strings
+                                .replace(/"([^"]*)"/g, '<span class="string">"$1"</span>')
+                                // Handle format specifiers
+                                .replace(/(%[diufFeEgGxXoscpaA])/g, '<span class="string">$1</span>')
+                                // Handle numbers
+                                .replace(/\b(\d+\.?\d*|\.\d+)\b/g, '<span class="number">$1</span>');
+                            
+                            return `<div class="code-line">${highlightedLine}</div>`;
+                        }).join('');
+                        
+                        codeContent.innerHTML = code;
+                        codeBlock.appendChild(codeContent);
+                        messageContent.appendChild(codeBlock);
+                    }
+                }
+            } else {
+                messageContent.textContent = message;
+            }
+            messageDiv.appendChild(messageContent);
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
+</body>
+
+</html>
